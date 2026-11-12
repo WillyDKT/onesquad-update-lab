@@ -54,9 +54,22 @@ def verify():
     assert file(TARGET, "scripts/onesquad-check-version.py", head) == (
         source / "distribution/sources/check-version.py").read_bytes()
     assert "v1.1.0" in second["body"] and "v1.2.0" in second["body"]
+    third = api(f"repos/{TARGET}/pulls/3")
+    assert third["state"] == "open" and not third["draft"]
+    assert third["base"]["ref"] == "scenario/agentic-routing"
+    client = file(TARGET, "AGENTS.md", third["base"]["sha"])
+    merged = file(TARGET, "AGENTS.md", third["head"]["sha"])
+    routing = b"\n## Agentic routing\n\n"
+    assert merged.startswith(client)
+    assert merged[len(client):].startswith(routing)
+    assert merged.count(b"Client-specific rule:") == 2
+    assert routing in merged and b"<<<<<<<" not in merged
+    assert json.loads(file(TARGET, MARKER, third["head"]["sha"]))["version"] == "1.3.0"
+    assert json.loads(file(TARGET, MARKER, third["base"]["sha"]))["version"] == "1.2.0"
     print("Verified: private labs, disabled Actions, filtered full installation, "
           "preserved customization, ignored release, cumulative notes, "
-          "unchanged conflicted file/version, exact report and distributed script.")
+          "unchanged conflicted file/version, exact report, distributed script, "
+          "and routing added with client review rules preserved.")
 
 
 if __name__ == "__main__":
