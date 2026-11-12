@@ -8,6 +8,7 @@
       "AGENTS.md",
       ".config.md",
       "distribution",
+      ".github/onesquad",
       "site",
       "apps/pages/docs",
       "docs/architecture/adr",
@@ -16,17 +17,17 @@
   },
   "files": [
     {
-      "source": "distribution/sources/contributor-guide.md",
+      "source": ".github/onesquad/sources/contributor-guide.md",
       "destination": "AGENTS.md",
       "policy": "merge"
     },
     {
-      "source": "distribution/sources/configuration-example.md",
+      "source": ".github/onesquad/sources/configuration-example.md",
       "destination": ".config.example.md",
       "policy": "seed"
     },
     {
-      "source": "distribution/sources/check-version.py",
+      "source": ".github/onesquad/sources/check-version.py",
       "destination": "scripts/onesquad-check-version.py",
       "policy": "managed"
     }

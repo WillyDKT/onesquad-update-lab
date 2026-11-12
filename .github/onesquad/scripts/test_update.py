@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from update import MANIFEST, MARKER, REPORT, finalize, initialize, prepare
+from update import MANIFEST, MARKER, NAMESPACE, REPORT, finalize, initialize, prepare
 
 
 class UpdateTests(unittest.TestCase):
@@ -24,6 +24,7 @@ class UpdateTests(unittest.TestCase):
         data = {"schema_version": 1, "initialization": {"exclude": ["distribution", "site"]},
                 "files": [{"source": "distribution/sources/guide.md",
                            "destination": "AGENTS.md", "policy": "merge"}]}
+        (self.repo / MANIFEST).parent.mkdir(parents=True)
         (self.repo / MANIFEST).write_text(json.dumps(data))
         (self.repo / "site").mkdir()
         (self.repo / "site/index.md").write_text("Excluded site")
@@ -50,6 +51,38 @@ class UpdateTests(unittest.TestCase):
         self.assertEqual(result["conflicts"], [])
         self.assertIn("Rule new.", (self.target / "AGENTS.md").read_text())
         self.assertEqual(prepare(self.repo, self.target, "v1.1.0", "1.1.0")["changes"], [])
+
+    def test_legacy_marker_migrates_without_losing_metadata(self):
+        installed = (self.target / MARKER).read_bytes()
+        (self.target / MARKER).unlink()
+        (self.target / NAMESPACE).rmdir()
+        (self.target / NAMESPACE).write_bytes(installed)
+        self.release()
+        prepare(self.repo, self.target, "v1.1.0", "1.1.0")
+        self.assertTrue((self.target / NAMESPACE).is_dir())
+        self.assertEqual(json.loads((self.target / MARKER).read_bytes())["version"], "1.1.0")
+
+    def test_legacy_pending_update_blocks_migration(self):
+        installed = (self.target / MARKER).read_bytes()
+        (self.target / MARKER).unlink()
+        (self.target / NAMESPACE).rmdir()
+        (self.target / NAMESPACE).write_bytes(installed)
+        pending = self.target / ".github/onesquad-update/state.json"
+        pending.parent.mkdir()
+        pending.write_text("{}")
+        self.release()
+        with self.assertRaisesRegex(ValueError, "legacy pending"):
+            prepare(self.repo, self.target, "v1.1.0", "1.1.0")
+        self.assertEqual((self.target / NAMESPACE).read_bytes(), installed)
+
+    def test_reserved_namespace_cannot_be_a_distribution_destination(self):
+        data = json.loads((self.repo / MANIFEST).read_text())
+        data["files"][0]["destination"] = MARKER
+        (self.repo / MANIFEST).write_text(json.dumps(data))
+        self.commit()
+        self.cmd("tag", "v1.1.0")
+        with self.assertRaisesRegex(ValueError, "reserved"):
+            prepare(self.repo, self.target, "v1.1.0", "1.1.0")
 
     def test_non_overlapping_customization(self):
         local = self.target / "AGENTS.md"

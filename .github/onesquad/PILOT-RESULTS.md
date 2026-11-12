@@ -1,5 +1,9 @@
 # Private pilot results - 2026-11-12
 
+Tooling now lives under `.github/onesquad/`; historical releases and PRs retain
+their original file paths. New adopter state uses `.github/onesquad/state.json`.
+No existing demonstration PR is rewritten by this migration.
+
 ## Persisted evidence
 
 | Scenario | Evidence | Result |
@@ -11,7 +15,8 @@
 | Script distribution | Same draft PR | New script copied to `scripts/`, not executed. |
 | Conflict safety | Same draft PR | `AGENTS.md` unchanged, marker remains 1.0.0; human resolution required. |
 
-Twelve local unit tests cover clean/repeated updates, independent customization,
+Fifteen local unit tests cover legacy marker migration, pending-update protection,
+reserved namespace validation, clean/repeated updates, independent customization,
 conflict/finalization, skipped releases, symlinks, disabled updates, local
 deletions, protected local content, invalid paths and installation filtering.
 `verify_pilot.py` checks the remote evidence and performs a full filtered

@@ -6,5 +6,5 @@ from pathlib import Path
 
 
 if __name__ == "__main__":
-    metadata = json.loads(Path(".github/onesquad").read_text())
+    metadata = json.loads(Path(".github/onesquad/state.json").read_text())
     print(f"OneSquad integrated version: {metadata['version']}")

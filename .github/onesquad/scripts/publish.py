@@ -85,8 +85,8 @@ def publish(source, version, base_branch="main"):
             + ("La version intégrée reste inchangée. Comparaison exacte ancienne base / "
                "projet / nouvelle release : "
                "[rapport](https://github.com/" + TARGET + "/blob/" + branch +
-               "/.github/onesquad-update/report.md). "
-               "Résoudre les fichiers, utiliser `distribution/update.py finalize` "
+               "/.github/onesquad/updates/report.md). "
+               "Résoudre les fichiers, utiliser `.github/onesquad/scripts/update.py finalize` "
                "depuis la source avec `--resolved <chemin>`, puis faire relire.\n"
                if summary["conflicts"] else
                "Les personnalisations conservées doivent également être relues.\n")
@@ -108,4 +108,4 @@ if __name__ == "__main__":
     parser.add_argument("--base", default="main",
                         help="Isolated adopter scenario branch (default: main)")
     args = parser.parse_args()
-    publish(Path(__file__).resolve().parents[1], args.version, args.base)
+    publish(Path(__file__).resolve().parents[3], args.version, args.base)

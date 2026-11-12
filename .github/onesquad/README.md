@@ -1,5 +1,13 @@
 # OneSquad private update pilot
 
+Source tooling, manifest and mapped sources live under `.github/onesquad/`.
+Adopters receive only `.github/onesquad/state.json`, not those maintainer tools.
+`updates/` is reserved for migration metadata. The older content-merge engine
+temporarily uses `updates/report.md` and `updates/pending.json`; native Git
+conflict PRs do not need those reports. Empty `updates/` directories are not
+tracked. Legacy file markers migrate only after complete update validation;
+legacy pending reports must first be finalized using their original tooling.
+
 This directory is experimental, not production tooling. The source repository
 is a tracked-file snapshot of `dktunited/one-squad` at commit
 `639f15520f7560fc7ac435c1853cd610f1b8e63c`; no upstream history or local profile
@@ -16,7 +24,7 @@ Use an empty destination directory, Python 3 and Git. Run from a clone of this
 source repository with the chosen release tag available:
 
 ```sh
-python3 distribution/update.py initialize --source . \
+python3 .github/onesquad/scripts/update.py initialize --source . \
   --target /path/to/empty-project --ref v1.0.0 --version 1.0.0
 ```
 
@@ -30,8 +38,8 @@ it must not independently reinterpret which files to copy.
 ## Updates
 
 ```sh
-python3 -m unittest discover -s distribution -p 'test_*.py'
-python3 distribution/publish.py --version 1.1.0
+python3 -m unittest discover -s .github/onesquad/scripts -p 'test_*.py'
+python3 .github/onesquad/scripts/publish.py --version 1.4.0
 ```
 
 The publisher requires authenticated `gh` and Git push access. On the local
@@ -45,7 +53,7 @@ version. A draft PR links the exact old/local/new contents. To resolve it,
 check out its branch, edit the file, then run from the source clone:
 
 ```sh
-python3 distribution/update.py finalize --target /path/to/adopter \
+python3 .github/onesquad/scripts/update.py finalize --target /path/to/adopter \
   --resolved AGENTS.md
 ```
 

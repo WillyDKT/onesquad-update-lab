@@ -22,7 +22,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - name: Check distribution fixtures
-        run: python3 -m unittest discover -s distribution -p 'test_*.py'
+        run: python3 -m unittest discover -s .github/onesquad/scripts -p 'test_*.py'
       - name: Propose update to the disposable adopter only
         env:
           GH_TOKEN: ${{ secrets.PILOT_TOKEN }}
@@ -34,4 +34,4 @@ jobs:
             exit 1
           fi
           version="${INPUT_VERSION:-${RELEASE_TAG#v}}"
-          python3 distribution/publish.py --version "$version"
+          python3 .github/onesquad/scripts/publish.py --version "$version"

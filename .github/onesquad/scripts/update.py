@@ -12,10 +12,12 @@ import tempfile
 from pathlib import Path, PurePosixPath
 
 
-MARKER = ".github/onesquad"
-REPORT = ".github/onesquad-update/report.md"
-STATE = ".github/onesquad-update/state.json"
-MANIFEST = "distribution/manifest.json"
+NAMESPACE = ".github/onesquad"
+MARKER = NAMESPACE + "/state.json"
+REPORT = NAMESPACE + "/updates/report.md"
+STATE = NAMESPACE + "/updates/pending.json"
+MANIFEST = NAMESPACE + "/manifest.json"
+LEGACY_MANIFEST = "distribution/manifest.json"
 UPSTREAM = "WillyDKT/onesquad-update-lab"
 
 
@@ -66,14 +68,16 @@ def content(repo, tree, name):
 
 
 def manifest(repo, tree):
-    data = json.loads(content(repo, tree, MANIFEST))
+    name = MANIFEST if MANIFEST in tree else LEGACY_MANIFEST
+    data = json.loads(content(repo, tree, name))
     if data["schema_version"] != 1:
         raise ValueError("Unsupported manifest schema")
     seen = set()
     for item in data["files"]:
         safe_path(item["source"])
         name = safe_path(item["destination"])
-        if (name in seen or name in (MARKER, ".config.md")
+        if (name in seen or name in (NAMESPACE, ".config.md")
+                or name.startswith(NAMESPACE + "/")
                 or name.startswith(".github/onesquad-update/")):
             raise ValueError(f"Duplicate or reserved destination: {name}")
         if item["policy"] not in ("merge", "managed", "seed"):
@@ -104,6 +108,21 @@ def marker(version, commit):
                 commit=commit, updates_enabled=True)
 
 
+def read_marker(target):
+    legacy = destination(target, NAMESPACE) if not (target / NAMESPACE).is_dir() else None
+    if legacy is not None and legacy.exists():
+        return json.loads(legacy.read_bytes())
+    return json.loads(destination(target, MARKER).read_bytes())
+
+
+def migrate_marker(target, current):
+    legacy = target / NAMESPACE
+    if legacy.is_file():
+        # Called only after validating the complete update plan.
+        destination(target, NAMESPACE).unlink()
+        write(target, MARKER, json_bytes(current))
+
+
 def excluded(name, patterns):
     return any(name == p or name.startswith(p.rstrip("/") + "/")
                or fnmatch.fnmatchcase(name, p) for p in patterns)
@@ -119,7 +138,8 @@ def initialize(repo, target, ref, version, minimal=False):
     output = {}
     if not minimal:
         for name, (mode, _) in tree.items():
-            if not excluded(name, data["initialization"]["exclude"] + [".config.md"]):
+            if not excluded(name, data["initialization"]["exclude"]
+                            + [".config.md", NAMESPACE, ".github/onesquad-update"]):
                 output[name] = (content(repo, tree, name), mode)
     for item in data["files"]:
         output[item["destination"]] = (
@@ -164,13 +184,16 @@ def section(blob):
 
 
 def prepare(repo, target, ref, version):
-    current = json.loads(destination(target, MARKER).read_bytes())
+    current = read_marker(target)
     if current.get("schema_version") != 1 or current.get("upstream") != UPSTREAM:
         raise ValueError("Unsupported or foreign adopter marker")
     if not current.get("updates_enabled", False):
         raise ValueError("Updates are disabled by the adopting team")
-    for name in (REPORT, STATE):
+    for name in (".github/onesquad-update/report.md", ".github/onesquad-update/state.json"):
         if destination(target, name).exists():
+            raise ValueError("Finalize the legacy pending update before migrating its metadata")
+    for name in (REPORT, STATE):
+        if (target / NAMESPACE).is_dir() and destination(target, name).exists():
             raise ValueError("Resolve the pending update before preparing another one")
     old_commit = current["commit"]
     if not re.fullmatch(r"[a-f0-9]{40}", old_commit):
@@ -216,6 +239,7 @@ def prepare(repo, target, ref, version):
             planned.append((name, output, new_tree[after["source"]][0]))
             changes.append(name)
     # All paths and manifests have been validated before writes begin.
+    migrate_marker(target, current)
     for name, blob, mode in planned:
         write(target, name, blob, mode)
     summary = dict(from_version=current["version"], to_version=version,

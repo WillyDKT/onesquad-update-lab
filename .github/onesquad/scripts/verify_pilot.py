@@ -7,7 +7,11 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from update import MARKER, REPORT, UPSTREAM, initialize
+from update import UPSTREAM, initialize
+
+# These immutable historical PRs intentionally retain the original layout.
+MARKER = ".github/onesquad"
+REPORT = ".github/onesquad-update/report.md"
 
 
 TARGET = "WillyDKT/onesquad-example-lab"
@@ -23,7 +27,7 @@ def file(repo, path, ref):
 
 
 def verify():
-    source = Path(__file__).resolve().parents[1]
+    source = Path(__file__).resolve().parents[3]
     with tempfile.TemporaryDirectory() as directory:
         initialize(source, Path(directory), "v1.0.0", "1.0.0")
         installed = Path(directory)
@@ -52,7 +56,8 @@ def verify():
                  b"Our team uses kebab-case", b"link it to the feature"):
         assert text in report, f"Report missing {text!r}"
     assert file(TARGET, "scripts/onesquad-check-version.py", head) == (
-        source / "distribution/sources/check-version.py").read_bytes()
+        subprocess.check_output(["git", "-C", str(source), "show",
+                                 "v1.2.0:distribution/sources/check-version.py"]))
     assert "v1.1.0" in second["body"] and "v1.2.0" in second["body"]
     third = api(f"repos/{TARGET}/pulls/3")
     assert third["state"] == "open" and not third["draft"]
