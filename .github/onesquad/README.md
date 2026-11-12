@@ -37,6 +37,20 @@ it must not independently reinterpret which files to copy.
 
 ## Updates
 
+The current review suite has three open proposals: clean documentation update,
+native conflict and cumulative update after skipping a release. PRs #1 through
+#7 are closed, not deleted or merged. See `PILOT-RESULTS.md`.
+
+```sh
+python3 .github/onesquad/scripts/verify_scenarios.py
+```
+
+`scenarios.py skip` creates/closes the isolated v1.4 proposal.
+After v1.5 is published, `scenarios.py suite` creates the three review PRs,
+without model calls. It does not publish a release or enable Actions itself.
+Its native-history path is a controlled fixture, not a general production updater.
+Reruns reuse existing PRs rather than overwrite branches.
+
 ```sh
 python3 -m unittest discover -s .github/onesquad/scripts -p 'test_*.py'
 python3 .github/onesquad/scripts/publish.py --version 1.4.0

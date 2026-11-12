@@ -47,7 +47,7 @@ def verify():
     clean = file(TARGET, "AGENTS.md", first["head"]["sha"])
     assert b"link it to the feature" in clean
     assert b"Our team uses kebab-case" in clean
-    assert second["draft"] and second["state"] == "open"
+    assert second["draft"] and second["state"] == "closed"
     head = second["head"]["sha"]
     assert file(TARGET, "AGENTS.md", head) == file(TARGET, "AGENTS.md", "main")
     assert json.loads(file(TARGET, MARKER, head))["version"] == "1.0.0"
@@ -60,7 +60,7 @@ def verify():
                                  "v1.2.0:distribution/sources/check-version.py"]))
     assert "v1.1.0" in second["body"] and "v1.2.0" in second["body"]
     third = api(f"repos/{TARGET}/pulls/3")
-    assert third["state"] == "open" and not third["draft"]
+    assert third["state"] == "closed" and not third["draft"]
     assert third["base"]["ref"] == "scenario/agentic-routing"
     client = file(TARGET, "AGENTS.md", third["base"]["sha"])
     merged = file(TARGET, "AGENTS.md", third["head"]["sha"])
@@ -72,7 +72,7 @@ def verify():
     assert json.loads(file(TARGET, MARKER, third["head"]["sha"]))["version"] == "1.3.0"
     assert json.loads(file(TARGET, MARKER, third["base"]["sha"]))["version"] == "1.2.0"
     fourth = api(f"repos/{TARGET}/pulls/4")
-    assert fourth["state"] == "open" and fourth["draft"]
+    assert fourth["state"] == "closed" and fourth["draft"]
     assert fourth["base"]["ref"] == "scenario/agentic-routing-conflict"
     head = fourth["head"]["sha"]
     assert file(TARGET, "AGENTS.md", head) == file(
@@ -86,7 +86,7 @@ def verify():
     assert {item["filename"] for item in changed} == {
         REPORT, ".github/onesquad-update/state.json"}
     sixth = api(f"repos/{TARGET}/pulls/6")
-    assert sixth["state"] == "open" and not sixth["draft"]
+    assert sixth["state"] == "closed" and not sixth["draft"]
     assert sixth["base"]["ref"] == "scenario/namespaced-state"
     head, base = sixth["head"]["sha"], sixth["base"]["sha"]
     assert file(TARGET, "AGENTS.md", head) == file(TARGET, "AGENTS.md", base)

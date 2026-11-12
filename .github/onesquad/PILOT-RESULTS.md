@@ -4,6 +4,33 @@ Tooling now lives under `.github/onesquad/`; historical releases and PRs retain
 their original file paths. New adopter state uses `.github/onesquad/state.json`.
 No existing demonstration PR is rewritten by this migration.
 
+## Current review suite
+
+At the user's request, PRs #1 through #6 are now closed without merge.
+GitHub retains their history; they are not deleted. The replacement suite is:
+
+| Test | Evidence | Expected and observed result |
+| --- | --- | --- |
+| Normal update | [WillyDKT/onesquad-example-lab#8](https://github.com/WillyDKT/onesquad-example-lab/pull/8) | v1.4 -> v1.5 adds `docs/run/onesquad/update-review.md`; Git merges cleanly and preserves client review rules. |
+| Native conflict | [WillyDKT/onesquad-example-lab#9](https://github.com/WillyDKT/onesquad-example-lab/pull/9) | v1.4 -> v1.5 modifies the same routing line on both branches; GitHub reports `CONFLICTING` / `DIRTY`, only `AGENTS.md` is unmerged. |
+| Skip then cumulative update | [WillyDKT/onesquad-example-lab#7](https://github.com/WillyDKT/onesquad-example-lab/pull/7) (closed) then [WillyDKT/onesquad-example-lab#10](https://github.com/WillyDKT/onesquad-example-lab/pull/10) | v1.4 proposal closed; base stays v1.3. After publishing v1.5, the new PR includes both the v1.4 version-script change and v1.5 docs/routing. |
+
+These are separate `scenario/review-suite/*` branches. Client `main` and earlier
+release tags are unchanged. Exactly #8/#9/#10 remain open.
+
+`scenarios.py` deterministically constructs known-ancestor fixtures for the normal
+and native-conflict cases; `publish.py` handles the skip/cumulative case.
+`verify_scenarios.py` checks GitHub states and exact files, then performs temporary
+local merges to verify clean customization preservation and the native conflict.
+Rerunning publication does not create duplicates.
+
+[v1.5.0](https://github.com/WillyDKT/onesquad-update-lab/releases/tag/v1.5.0)
+was published before running the suite. This is explicit local orchestration,
+not proof that a release event triggered Actions: Actions remain disabled.
+No model calls are made by either script. No PR was merged.
+
+## Archived namespace migration
+
 [WillyDKT/onesquad-example-lab#6](https://github.com/WillyDKT/onesquad-example-lab/pull/6)
 proposes v1.3.0 -> v1.4.0 on `scenario/namespaced-state`, an isolated fixture
 starting from the clean proposal of PR #3. The deterministic publisher migrated
@@ -37,7 +64,7 @@ installation in a temporary directory.
   not by an unattended GitHub App or release-triggered workflow.
 - The source contains a release/manual workflow, but approved cross-repository
   authentication and an Actions review are still required before enabling it.
-- No PR was merged. Drafts #2/#4 and the independent clean scenario PR #3 remain available for human review.
+- No PR was merged. Earlier PRs are closed; the three current proposals remain available for review.
 - This is not a production-ready migration engine: tracking removals, policy
   changes and mode changes block for review; renames are not inferred.
 - No protections, required checks, automatic conflict revalidation, adoption
