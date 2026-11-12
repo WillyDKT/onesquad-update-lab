@@ -11,6 +11,7 @@ updated: 2026-10-29
 # Context map
 
 OneSquad organizes shared product and engineering context beside the code in one repository. Contributors and AI tools follow links and metadata to find relevant knowledge rather than reading everything. External sources can remain authoritative; preserve their provenance instead of presenting local summaries as automatically current.
+Add this line just to test.
 
 ## Document metadata
 
