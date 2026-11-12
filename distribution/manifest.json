@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "initialization": {
+    "exclude": [
+      ".github/workflows",
+      ".github/skills",
+      ".github/instructions",
+      "AGENTS.md",
+      ".config.md",
+      "distribution",
+      "site",
+      "apps/pages/docs",
+      "docs/architecture/adr",
+      "docs/project"
+    ]
+  },
+  "files": [
+    {
+      "source": "distribution/sources/contributor-guide.md",
+      "destination": "AGENTS.md",
+      "policy": "merge"
+    },
+    {
+      "source": "distribution/sources/configuration-example.md",
+      "destination": ".config.example.md",
+      "policy": "seed"
+    }
+  ]
+}

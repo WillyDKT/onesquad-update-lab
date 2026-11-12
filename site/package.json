@@ -1,0 +1,43 @@
+{
+  "name": "one-squad-site",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "auth:registry": "npx google-artifactregistry-auth",
+    "dev": "next dev",
+    "predev": "node scripts/prepare-assets.mjs",
+    "prebuild": "node scripts/prepare-assets.mjs",
+    "build": "next build",
+    "build:docs": "npm run build",
+    "typecheck": "tsc --noEmit",
+    "test:docs": "tsx --test lib/docs.test.ts",
+    "test:export": "node --test scripts/export.test.mjs",
+    "start": "python3 -m http.server 3000 --directory out"
+  },
+  "dependencies": {
+    "@vtmn-play/css": "^0.35.10",
+    "@vtmn-play/design-tokens": "^0.26.9",
+    "@vtmn-play/fonts": "^0.1.2",
+    "@vtmn-play/icons": "^0.14.9",
+    "@vtmn-play/tailwindcss": "^0.1.7",
+    "@tailwindcss/postcss": "^4.3.3",
+    "gray-matter": "^4.0.3",
+    "highlight.js": "^11.11.1",
+    "markdown-it": "^14.1.0",
+    "next": "^16.3.8",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "^14.1.2",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}

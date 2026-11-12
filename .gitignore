@@ -1,0 +1,9 @@
+/site/dist/
+/site/node_modules/
+/site/.next/
+/site/out/
+/site/tsconfig.tsbuildinfo
+/site/next-env.d.ts
+/site/public/docs-assets/
+.config.md
+.idea

@@ -1,0 +1,41 @@
+name: Deploy to Pages
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, decathlon]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - name: Authenticate to Google Artifact Registry
+        uses: dktunited/.github/actions/npm-authenticate-gar@main
+        with:
+          directory: site
+
+      - name: Build documentation
+        run: |
+          npm --prefix site ci
+          npm --prefix site run test:docs
+          npm --prefix site run build:docs
+          npm --prefix site run typecheck
+          npm --prefix site run test:export
+
+      - name: Deploy to Pages
+        uses: dktunited/pages/.github/actions/deploy-pages@main
+        with:
+          directory: site/out
