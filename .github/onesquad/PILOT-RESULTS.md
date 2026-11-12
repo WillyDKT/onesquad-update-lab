@@ -4,6 +4,14 @@ Tooling now lives under `.github/onesquad/`; historical releases and PRs retain
 their original file paths. New adopter state uses `.github/onesquad/state.json`.
 No existing demonstration PR is rewritten by this migration.
 
+[WillyDKT/onesquad-example-lab#6](https://github.com/WillyDKT/onesquad-example-lab/pull/6)
+proposes v1.3.0 -> v1.4.0 on `scenario/namespaced-state`, an isolated fixture
+starting from the clean proposal of PR #3. The deterministic publisher migrated
+the marker and updated the version-reading script, leaving `AGENTS.md` unchanged.
+No AI model is invoked by update computation or PR publication. This clean
+migration still uses the content-based prototype, not a generalized native-history
+engine. Neither this PR nor earlier demonstrations were merged.
+
 ## Persisted evidence
 
 | Scenario | Evidence | Result |

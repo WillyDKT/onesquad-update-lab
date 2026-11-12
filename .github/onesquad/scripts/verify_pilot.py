@@ -85,11 +85,31 @@ def verify():
     changed = api(f"repos/{TARGET}/pulls/4/files")
     assert {item["filename"] for item in changed} == {
         REPORT, ".github/onesquad-update/state.json"}
+    sixth = api(f"repos/{TARGET}/pulls/6")
+    assert sixth["state"] == "open" and not sixth["draft"]
+    assert sixth["base"]["ref"] == "scenario/namespaced-state"
+    head, base = sixth["head"]["sha"], sixth["base"]["sha"]
+    assert file(TARGET, "AGENTS.md", head) == file(TARGET, "AGENTS.md", base)
+    state = json.loads(file(TARGET, ".github/onesquad/state.json", head))
+    assert state["version"] == "1.4.0" and state["updates_enabled"]
+    assert state["upstream"] == UPSTREAM
+    expected_commit = subprocess.check_output(
+        ["git", "-C", str(source), "rev-parse", "v1.4.0^{commit}"]).decode().strip()
+    assert state["commit"] == expected_commit
+    assert json.loads(file(TARGET, MARKER, base))["version"] == "1.3.0"
+    listing = api(f"repos/{TARGET}/contents/.github/onesquad?ref={head}")
+    assert {item["name"] for item in listing} == {"state.json"}
+    changed = api(f"repos/{TARGET}/pulls/6/files")
+    assert {item["filename"] for item in changed} <= {
+        MARKER, ".github/onesquad/state.json", "scripts/onesquad-check-version.py"}
+    assert file(TARGET, "scripts/onesquad-check-version.py", head) == (
+        source / ".github/onesquad/sources/check-version.py").read_bytes()
     print("Verified: private labs, disabled Actions, filtered full installation, "
           "preserved customization, ignored release, cumulative notes, "
           "unchanged conflicted file/version, exact report, distributed script, "
           "routing added with client review rules preserved, "
-          "and conflicting client routing reported without overwrite.")
+          "conflicting client routing reported without overwrite, "
+          "and isolated v1.4 namespace migration preserving client guidance.")
 
 
 if __name__ == "__main__":
