@@ -17,6 +17,11 @@
   },
   "files": [
     {
+      "source": ".github/onesquad/sources/update-review.md",
+      "destination": "docs/run/onesquad/update-review.md",
+      "policy": "merge"
+    },
+    {
       "source": ".github/onesquad/sources/contributor-guide.md",
       "destination": "AGENTS.md",
       "policy": "merge"

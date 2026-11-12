@@ -14,7 +14,7 @@ Document the adopting team's local conventions in a dedicated section before mer
 
 ## Agentic routing
 
-Start from the requested task and load only the relevant project context.
+Start from the requested task, read its linked specification, and load only the relevant project context.
 For product requirements, consult docs/project/ before proposing changes.
 For technical decisions, consult docs/architecture/ and the affected application.
 For operational questions, consult docs/run/.
