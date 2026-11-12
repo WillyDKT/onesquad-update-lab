@@ -2,7 +2,7 @@
 
 ## Documentation
 
-Keep related project documentation aligned with changes.
+Keep related project documentation aligned with changes and link it to the feature.
 
 ## Review
 
