@@ -66,10 +66,25 @@ def verify():
     assert routing in merged and b"<<<<<<<" not in merged
     assert json.loads(file(TARGET, MARKER, third["head"]["sha"]))["version"] == "1.3.0"
     assert json.loads(file(TARGET, MARKER, third["base"]["sha"]))["version"] == "1.2.0"
+    fourth = api(f"repos/{TARGET}/pulls/4")
+    assert fourth["state"] == "open" and fourth["draft"]
+    assert fourth["base"]["ref"] == "scenario/agentic-routing-conflict"
+    head = fourth["head"]["sha"]
+    assert file(TARGET, "AGENTS.md", head) == file(
+        TARGET, "AGENTS.md", fourth["base"]["sha"])
+    assert json.loads(file(TARGET, MARKER, head))["version"] == "1.2.0"
+    conflict_report = file(TARGET, REPORT, head)
+    for text in (b"Old OneSquad base", b"Current project", b"New OneSquad release",
+                 b"start with the payments maintainer", b"load only the relevant project context"):
+        assert text in conflict_report, f"Routing report missing {text!r}"
+    changed = api(f"repos/{TARGET}/pulls/4/files")
+    assert {item["filename"] for item in changed} == {
+        REPORT, ".github/onesquad-update/state.json"}
     print("Verified: private labs, disabled Actions, filtered full installation, "
           "preserved customization, ignored release, cumulative notes, "
           "unchanged conflicted file/version, exact report, distributed script, "
-          "and routing added with client review rules preserved.")
+          "routing added with client review rules preserved, "
+          "and conflicting client routing reported without overwrite.")
 
 
 if __name__ == "__main__":

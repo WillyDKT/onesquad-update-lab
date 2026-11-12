@@ -11,7 +11,7 @@
 | Script distribution | Same draft PR | New script copied to `scripts/`, not executed. |
 | Conflict safety | Same draft PR | `AGENTS.md` unchanged, marker remains 1.0.0; human resolution required. |
 
-Eleven local unit tests cover clean/repeated updates, independent customization,
+Twelve local unit tests cover clean/repeated updates, independent customization,
 conflict/finalization, skipped releases, symlinks, disabled updates, local
 deletions, protected local content, invalid paths and installation filtering.
 `verify_pilot.py` checks the remote evidence and performs a full filtered
@@ -24,7 +24,7 @@ installation in a temporary directory.
   not by an unattended GitHub App or release-triggered workflow.
 - The source contains a release/manual workflow, but approved cross-repository
   authentication and an Actions review are still required before enabling it.
-- No PR was merged. Draft #2 and the independent scenario PR #3 remain available for human review.
+- No PR was merged. Drafts #2/#4 and the independent clean scenario PR #3 remain available for human review.
 - This is not a production-ready migration engine: tracking removals, policy
   changes and mode changes block for review; renames are not inferred.
 - No protections, required checks, automatic conflict revalidation, adoption
@@ -51,3 +51,22 @@ advances from 1.2.0 to 1.3.0 only on the proposed branch. There is no conflict
 because the client and source changes are in independent passages. This does
 not demonstrate automatic semantic resolution of overlapping edits; draft #2
 still illustrates that limitation.
+
+## Additional scenario: existing client Agentic routing
+
+[WillyDKT/onesquad-example-lab#4](https://github.com/WillyDKT/onesquad-example-lab/pull/4)
+targets `scenario/agentic-routing-conflict`, derived from the same fresh v1.2.0
+fixture as scenario #3. Before proposing the exact same source v1.3.0, the
+client added an Agentic routing section at the same location, with
+payments-maintainer-first routing and incident guidance.
+
+Git reports a conflicting concurrent addition. The publisher leaves the full
+client `AGENTS.md` unchanged and keeps its integrated marker at 1.2.0. Only
+the old/local/new report and resolution state are committed in the draft PR.
+No conflict markers appear in the functional guide. The previous PRs and
+branches remain unchanged.
+
+A matching heading alone is not a semantic conflict detector: this example
+conflicts because both sides add different text at the same location. Similar
+headings elsewhere might merge textually without being logically compatible.
+Human review remains necessary.

@@ -154,6 +154,23 @@ class UpdateTests(unittest.TestCase):
         self.assertIn("Client-specific review must be preserved.", local.read_text())
         self.assertIn("## Agentic routing", local.read_text())
 
+    def test_existing_client_routing_conflicts_with_upstream_addition(self):
+        local = self.target / "AGENTS.md"
+        local.write_text(local.read_text()
+                         + "\n## Agentic routing\n\nStart with our payments maintainer.\n")
+        original = local.read_bytes()
+        self.source.write_text(self.source.read_text()
+                               + "\n## Agentic routing\n\nLoad context by requested task.\n")
+        self.commit()
+        self.cmd("tag", "v1.1.0")
+        result = prepare(self.repo, self.target, "v1.1.0", "1.1.0")
+        self.assertEqual(result["conflicts"], ["AGENTS.md"])
+        self.assertEqual(local.read_bytes(), original)
+        self.assertEqual(json.loads((self.target / MARKER).read_text())["version"], "1.0.0")
+        report = (self.target / REPORT).read_text()
+        self.assertIn("Start with our payments maintainer.", report)
+        self.assertIn("Load context by requested task.", report)
+
 
 if __name__ == "__main__":
     unittest.main()

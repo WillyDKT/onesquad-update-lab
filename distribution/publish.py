@@ -2,6 +2,7 @@
 """Publish lab updates. Only this disposable adopter is authorized in the pilot."""
 
 import argparse
+import hashlib
 import json
 import re
 import subprocess
@@ -21,8 +22,13 @@ def run(*args, cwd=None):
 def publish(source, version, base_branch="main"):
     marker(version, "")
     branch = f"onesquad/update-v{version}"
-    existing = json.loads(run("gh", "pr", "list", "--repo", TARGET, "--head",
-                              branch, "--state", "all", "--json", "url,state"))
+    if base_branch != "main":
+        branch += "-" + hashlib.sha256(base_branch.encode()).hexdigest()[:10]
+    title = f"chore(onesquad): update to v{version}"
+    proposals = json.loads(run("gh", "pr", "list", "--repo", TARGET, "--base",
+                               base_branch, "--state", "all", "--limit", "100",
+                               "--json", "url,state,title"))
+    existing = [proposal for proposal in proposals if proposal["title"] == title]
     if existing:
         print(json.dumps({"skipped": "Proposal already exists for this release",
                           "pull_requests": existing}, indent=2))
@@ -88,7 +94,7 @@ def publish(source, version, base_branch="main"):
         body_file = Path(directory) / "pr.md"
         body_file.write_text(body)
         args = ["gh", "pr", "create", "--repo", TARGET, "--base", base_branch,
-                "--head", branch, "--title", f"chore(onesquad): update to v{version}",
+                "--head", branch, "--title", title,
                 "--body-file", str(body_file)]
         if summary["conflicts"]:
             args.append("--draft")
