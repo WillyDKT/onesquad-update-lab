@@ -10,4 +10,4 @@ Ask a project maintainer to review changes before merging.
 
 ## Local conventions
 
-The adopting team owns its local conventions.
+Document the adopting team's local conventions in a dedicated section before merging updates.

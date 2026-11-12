@@ -24,6 +24,11 @@
       "source": "distribution/sources/configuration-example.md",
       "destination": ".config.example.md",
       "policy": "seed"
+    },
+    {
+      "source": "distribution/sources/check-version.py",
+      "destination": "scripts/onesquad-check-version.py",
+      "policy": "managed"
     }
   ]
 }
