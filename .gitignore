@@ -7,3 +7,5 @@
 /site/public/docs-assets/
 .config.md
 .idea
+__pycache__/
+*.pyc
