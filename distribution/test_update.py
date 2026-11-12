@@ -141,6 +141,19 @@ class UpdateTests(unittest.TestCase):
         prepare(self.repo, self.target, "v1.1.0", "1.1.0")
         self.assertEqual(extra.read_text(), "Local product rules")
 
+    def test_upstream_routing_preserves_client_review_rules(self):
+        local = self.target / "AGENTS.md"
+        local.write_text(local.read_text().replace(
+            "Rule old.", "Rule old.\nClient-specific review must be preserved."))
+        self.source.write_text(self.source.read_text()
+                               + "\n## Agentic routing\n\nLoad context by requested task.\n")
+        self.commit()
+        self.cmd("tag", "v1.1.0")
+        result = prepare(self.repo, self.target, "v1.1.0", "1.1.0")
+        self.assertEqual(result["conflicts"], [])
+        self.assertIn("Client-specific review must be preserved.", local.read_text())
+        self.assertIn("## Agentic routing", local.read_text())
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -18,7 +18,7 @@ def run(*args, cwd=None):
     return subprocess.check_output(args, cwd=cwd).decode().strip()
 
 
-def publish(source, version):
+def publish(source, version, base_branch="main"):
     marker(version, "")
     branch = f"onesquad/update-v{version}"
     existing = json.loads(run("gh", "pr", "list", "--repo", TARGET, "--head",
@@ -28,12 +28,14 @@ def publish(source, version):
                           "pull_requests": existing}, indent=2))
         return
     opened = json.loads(run("gh", "pr", "list", "--repo", TARGET,
-                            "--state", "open", "--json", "headRefName,url"))
+                            "--state", "open", "--base", base_branch,
+                            "--json", "headRefName,url"))
     if any(p["headRefName"].startswith("onesquad/update-") for p in opened):
         raise ValueError("An older update is open; review/close it before publishing another")
     with tempfile.TemporaryDirectory(prefix="onesquad-pilot-") as directory:
         target = Path(directory) / "adopter"
-        run("gh", "repo", "clone", TARGET, str(target), "--", "--quiet")
+        run("gh", "repo", "clone", TARGET, str(target), "--", "--quiet",
+            "--branch", base_branch)
         base = run("git", "rev-parse", "HEAD", cwd=target)
         run("git", "checkout", "-b", branch, cwd=target)
         summary = prepare(source, target, f"v{version}", version)
@@ -45,7 +47,8 @@ def publish(source, version):
         run("git", "-c", "user.name=OneSquad pilot",
             "-c", "user.email=onesquad-pilot@users.noreply.github.com",
             "commit", "-m", f"chore(onesquad): update to v{version}", cwd=target)
-        live = run("git", "ls-remote", "origin", "refs/heads/main", cwd=target).split()[0]
+        live = run("git", "ls-remote", "origin", f"refs/heads/{base_branch}",
+                   cwd=target).split()[0]
         if live != base:
             raise ValueError("Target changed during preparation; rerun from its new base")
         run("git", "push", "--quiet", "origin", branch, cwd=target)
@@ -84,7 +87,7 @@ def publish(source, version):
         )
         body_file = Path(directory) / "pr.md"
         body_file.write_text(body)
-        args = ["gh", "pr", "create", "--repo", TARGET, "--base", "main",
+        args = ["gh", "pr", "create", "--repo", TARGET, "--base", base_branch,
                 "--head", branch, "--title", f"chore(onesquad): update to v{version}",
                 "--body-file", str(body_file)]
         if summary["conflicts"]:
@@ -96,5 +99,7 @@ def publish(source, version):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--version", required=True)
+    parser.add_argument("--base", default="main",
+                        help="Isolated adopter scenario branch (default: main)")
     args = parser.parse_args()
-    publish(Path(__file__).resolve().parents[1], args.version)
+    publish(Path(__file__).resolve().parents[1], args.version, args.base)
